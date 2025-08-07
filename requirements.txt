@@ -1,0 +1,4 @@
+python-telegram-bot==13.15
+pyTelegramBotAPI==4.14.1
+selenium==4.16.0
+python-dotenv==1.0.1
