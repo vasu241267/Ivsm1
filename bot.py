@@ -122,4 +122,9 @@ def handle_help(message):
     bot.reply_to(message, "/start - Start the bot\n/help - Show help info")
 
 print("🤖 Bot is running...")
-bot.polling()
+if __name__ == '__main__':
+    try:
+        bot.infinity_polling(timeout=10, long_polling_timeout=5)
+    except Exception as e:
+        print(f"Polling crashed: {e}")
+
