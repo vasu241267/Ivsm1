@@ -8,13 +8,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
-load_dotenv()  # Load environment variables
+load_dotenv()
 
 # ===== CONFIG =====
-TELEGRAM_TOKEN = "8049406807:AAGhuUh9fOm5wt7OvTobuRngqY0ZNBMxlHE"
-YOUR_TELEGRAM_ID = -1002311125652
-IVASMS_EMAIL = "imdigitalvasu@gmail.com"
-IVASMS_PASSWORD = "@Vasu2412"
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "8049406807:AAGhuUh9fOm5wt7OvTobuRngqY0ZNBMxlHE")
+YOUR_TELEGRAM_ID = int(os.getenv("YOUR_TELEGRAM_ID", "-1002311125652"))
+IVASMS_EMAIL = os.getenv("IVASMS_EMAIL", "imdigitalvasu@gmail.com")
+IVASMS_PASSWORD = os.getenv("IVASMS_PASSWORD", "@Vasu2412")
 IVASMS_URL = "https://www.ivasms.com/login"
 # ==================
 
@@ -30,7 +30,6 @@ def start_browser():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(options=chrome_options)
 
 def login_ivasms():
@@ -76,44 +75,59 @@ def check_for_otps():
                 if cols and "OTP" in cols[2].text:
                     number = cols[0].text.strip()
                     content = cols[2].text.strip()
-                    bot.send_message(YOUR_TELEGRAM_ID, f"📩 OTP for {number}: {content}")
+                    try:
+                        bot.send_message(YOUR_TELEGRAM_ID, f"📩 OTP for {number}: {content}")
+                    except Exception as e:
+                        print(f"[!] Error sending OTP to Telegram: {e}")
         except Exception as e:
-            print("Error checking OTPs:", e)
+            print("[!] Error checking OTPs:", e)
         time.sleep(60)
 
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     global monitoring, acquired_numbers
 
-    bot.reply_to(message, "🔄 Logging into iVASMS...")
-    start_browser()
-    login_ivasms()
-    numbers = get_available_numbers()
+    try:
+        bot.reply_to(message, "🔄 Logging into iVASMS...")
+    except Exception as e:
+        print(f"[!] Failed to reply: {e}")
 
-    if not numbers:
-        bot.send_message(message.chat.id, "❌ No numbers available.")
-        return
+    try:
+        start_browser()
+        login_ivasms()
+        numbers = get_available_numbers()
 
-    acquired_numbers = numbers
+        if not numbers:
+            bot.send_message(message.chat.id, "❌ No numbers available.")
+            return
 
-    markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    markup.add("yes", "no")
-    bot.send_message(
-        message.chat.id,
-        f"Hey Teez Plug Bot is active. Do you want to acquire these numbers?\n\n{', '.join(numbers)}",
-        reply_markup=markup
-    )
+        acquired_numbers = numbers
+
+        markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+        markup.add("yes", "no")
+
+        bot.send_message(
+            message.chat.id,
+            f"Hey Teez Plug Bot is active. Do you want to acquire these numbers?\n\n{', '.join(numbers)}",
+            reply_markup=markup
+        )
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Something went wrong: {e}")
+        print(f"[!] Error in /start: {e}")
 
 @bot.message_handler(func=lambda message: message.text.lower() in ["yes", "no"])
 def handle_response(message):
     global monitoring, acquired_numbers
 
     if message.text.lower() == "yes":
-        acquire_all_numbers()
-        bot.send_message(message.chat.id, "✅ Numbers acquired. Monitoring for OTPs...")
-        if not monitoring:
-            monitoring = True
-            threading.Thread(target=check_for_otps, daemon=True).start()
+        try:
+            acquire_all_numbers()
+            bot.send_message(message.chat.id, "✅ Numbers acquired. Monitoring for OTPs...")
+            if not monitoring:
+                monitoring = True
+                threading.Thread(target=check_for_otps, daemon=True).start()
+        except Exception as e:
+            bot.send_message(message.chat.id, f"❌ Error acquiring numbers: {e}")
     else:
         bot.send_message(message.chat.id, "❌ Okay, cancelled.")
 
@@ -126,5 +140,4 @@ if __name__ == '__main__':
     try:
         bot.infinity_polling(timeout=10, long_polling_timeout=5)
     except Exception as e:
-        print(f"Polling crashed: {e}")
-
+        print(f"[!] Polling crashed: {e}")
