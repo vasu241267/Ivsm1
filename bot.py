@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.options import Options
 import logging
 
 # === CONFIG ===
-TELEGRAM_TOKEN = "8011551620:AAFvDlRL7brL1JF9kEpQJXIVzZf01og4Lc0"
+TELEGRAM_TOKEN = "8049406807:AAGhuUh9fOm5wt7OvTobuRngqY0ZNBMxlHE"
 YOUR_TELEGRAM_ID = 6972264549
 IVASMS_EMAIL = "imdigitalvasu@gmail.com"
 IVASMS_PASSWORD = "@Vasu2412"
