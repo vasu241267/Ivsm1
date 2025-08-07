@@ -11,10 +11,10 @@ from selenium.webdriver.chrome.options import Options
 load_dotenv()  # Load environment variables
 
 # ===== CONFIG =====
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-YOUR_TELEGRAM_ID = int(os.getenv("YOUR_TELEGRAM_ID"))
-IVASMS_EMAIL = os.getenv("IVASMS_EMAIL")
-IVASMS_PASSWORD = os.getenv("IVASMS_PASSWORD")
+TELEGRAM_TOKEN = "8049406807:AAGhuUh9fOm5wt7OvTobuRngqY0ZNBMxlHE"
+YOUR_TELEGRAM_ID = -1002311125652
+IVASMS_EMAIL = "imdigitalvasu@gmail.com"
+IVASMS_PASSWORD = "@Vasu2412"
 IVASMS_URL = "https://www.ivasms.com/login"
 # ==================
 
