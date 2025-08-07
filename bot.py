@@ -40,18 +40,33 @@ def start_browser():
     driver = webdriver.Chrome(options=chrome_options)
     log.info("✅ Browser started")
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 def login_ivasms():
     try:
         log.info("🔐 Logging into iVASMS...")
         driver.get(IVASMS_URL)
-        time.sleep(3)
-        driver.find_element(By.NAME, "email").send_keys(IVASMS_EMAIL)
+
+        wait = WebDriverWait(driver, 15)
+
+        wait.until(EC.presence_of_element_located((By.NAME, "email"))).send_keys(IVASMS_EMAIL)
         driver.find_element(By.NAME, "password").send_keys(IVASMS_PASSWORD)
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Login')]").click()
-        time.sleep(5)
+
+        login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Login')]")))
+        login_button.click()
+
+        # Confirm dashboard is loaded (adjust if needed)
+        wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Test Numbers')]")))
+
         log.info("✅ Logged in successfully.")
     except Exception as e:
         log.error(f"❌ Login failed: {e}")
+        try:
+            driver.save_screenshot("/app/login_error.png")
+            log.info("📸 Screenshot saved to /app/login_error.png")
+        except:
+            log.warning("⚠ Could not save screenshot.")
 
 def get_available_numbers():
     log.info("🔍 Fetching available numbers...")
