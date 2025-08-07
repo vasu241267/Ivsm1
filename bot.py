@@ -32,13 +32,29 @@ def start_browser():
     chrome_options.add_argument("--disable-dev-shm-usage")
     driver = webdriver.Chrome(options=chrome_options)
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 def login_ivasms():
     driver.get(IVASMS_URL)
-    time.sleep(3)
+    
+    # Wait for email field
+    WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.NAME, "email")))
     driver.find_element(By.NAME, "email").send_keys(IVASMS_EMAIL)
     driver.find_element(By.NAME, "password").send_keys(IVASMS_PASSWORD)
-    driver.find_element(By.XPATH, "//button[contains(text(), 'Login')]").click()
-    time.sleep(5)
+
+    # Wait for login button and click
+    try:
+        login_btn = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Login')]"))
+        )
+        login_btn.click()
+    except Exception as e:
+        print("❌ Login button not found or not clickable.")
+        print(e)
+        # Take screenshot to debug
+        driver.save_screenshot("login_error.png")
+
 
 def get_available_numbers():
     driver.get("https://www.ivasms.com/test-number")
